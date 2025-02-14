@@ -1,9 +1,9 @@
 import streamlit as st
-import openai
-from openai import RateLimitError  # ✅ Correct (note the "or" ending)
+from openai import OpenAI, RateLimitError
+
 # Secure API Key Handling
 if "OPENAI_API_KEY" in st.secrets:
-    openai.api_key = st.secrets.OPENAI_API_KEY
+    client = OpenAI(api_key=st.secrets.OPENAI_API_KEY)
 else:
     st.error("Please set API key in Streamlit secrets")
     st.stop()
@@ -53,7 +53,7 @@ Provide the outline in markdown format."""
     
     try:
         with st.spinner("Generating outline..."):
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=1000,
@@ -83,7 +83,7 @@ Provide 3-5 concise paragraphs in markdown format."""
     
     try:
         with st.spinner(f"Generating {section_name}..."):
-            response = openai.ChatCompletion.create(
+            response = client.chat.completions.create(
                 model="gpt-3.5-turbo",
                 messages=[{"role": "user", "content": prompt}],
                 max_tokens=1000,
@@ -109,7 +109,7 @@ if st.session_state.step == "input":
         else:
             st.session_state.outline = generate_outline(st.session_state.topic, st.session_state.tone)
             st.session_state.step = "outline_confirm"
-            st.experimental_rerun()
+            st.rerun()
 
 elif st.session_state.step == "outline_confirm":
     st.title("Outline Review")
@@ -117,12 +117,12 @@ elif st.session_state.step == "outline_confirm":
     
     if st.button("Generate New Outline"):
         st.session_state.outline = generate_outline(st.session_state.topic, st.session_state.tone)
-        st.experimental_rerun()
+        st.rerun()
     
     if st.button("Start Script Generation"):
         st.session_state.step = "section"
         st.session_state.section_index = 0
-        st.experimental_rerun()
+        st.rerun()
 
 elif st.session_state.step == "section":
     current_index = st.session_state.section_index
@@ -141,11 +141,11 @@ elif st.session_state.step == "section":
             st.session_state.section_content[section] = generate_section(
                 st.session_state.topic, section, st.session_state.tone
             )
-            st.experimental_rerun()
+            st.rerun()
         
         if st.button("Next Section"):
             st.session_state.section_index += 1
-            st.experimental_rerun()
+            st.rerun()
     else:
         st.title("🎉 Script Complete!")
         final_script = f"# {st.session_state.topic}\n\n"
@@ -161,4 +161,4 @@ elif st.session_state.step == "section":
         
         if st.button("Create New Script"):
             st.session_state.clear()
-            st.experimental_rerun()
+            st.rerun()
