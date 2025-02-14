@@ -1,7 +1,6 @@
 import streamlit as st
 import openai
-from openai import RateLimitError
-
+from openai import RateLimitError  # ✅ Correct (note the "or" ending)
 # Secure API Key Handling
 if "OPENAI_API_KEY" in st.secrets:
     openai.api_key = st.secrets.OPENAI_API_KEY
